@@ -76,9 +76,34 @@ inductive Derivation : Judgment → Prop where
 
 
 -- Ah the infamous conversion rules
--- TODO
+| convTerm : Derivation (Γ ⊢ a ⋮ A) → Derivation (Γ ⊢ A ≅ A' type) → Derivation (Γ ⊢ a ⋮ A')
+
+-- context equality is a congruence relation
+| reflCtx : Derivation (Γ ⊢) → Derivation (Judgment.eqCtx Γ Γ)
+| symmCtx : Derivation (Judgment.eqCtx Γ Γ') → Derivation (Judgment.eqCtx Γ' Γ)
+| transCtx : Derivation (Judgment.eqCtx Γ Γ') → Derivation (Judgment.eqCtx Γ' Γ'') → Derivation (Judgment.eqCtx Γ Γ'')
+| ctxCongr : Derivation (Judgment.eqCtx Γ Γ') → Derivation (Γ ⊢ A type) → Derivation (Γ' ⊢ A type) →
+  Derivation (Judgment.eqCtx (Γ ⋆ A) (Γ' ⋆ A))
+| ctxCongrType : Derivation (Judgment.eqCtx Γ Γ') → Derivation (Γ ⊢ A ≅ A' type) →
+  Derivation (Judgment.eqCtx (Γ ⋆ A) (Γ' ⋆ A'))
 
 -- we need like 50 rules to make equality a congruence relation
--- TODO
+| reflType : Derivation (Γ ⊢ A type) → Derivation (Γ ⊢ A ≅ A type)
+| symmType : Derivation (Γ ⊢ A ≅ A' type) → Derivation (Γ ⊢ A' ≅ A type)
+| transType : Derivation (Γ ⊢ A ≅ A' type) → Derivation (Γ ⊢ A' ≅ A'' type) → Derivation (Γ ⊢ A ≅ A'' type)
+| reflSubst : Derivation (Γ ⊢ γ ∷ Δ) → Derivation (Γ ⊢ γ ≅ γ ∷ Δ)
+| symmSubst : Derivation (Γ ⊢ γ ≅ γ' ∷ Δ) → Derivation (Γ ⊢ γ' ≅ γ ∷ Δ)
+| transSubst : Derivation (Γ ⊢ γ ≅ γ' ∷ Δ) → Derivation (Γ ⊢ γ' ≅ γ'' ∷ Δ) → Derivation (Γ ⊢ γ ≅ γ'' ∷ Δ)
+| reflTerm : Derivation (Γ ⊢ a ⋮ A) → Derivation (Γ ⊢ a ≅ a ⋮ A)
+| symmTerm : Derivation (Γ ⊢ a ≅ a' ⋮ A) → Derivation (Γ ⊢ a' ≅ a ⋮ A)
+| transTerm : Derivation (Γ ⊢ a ≅ a' ⋮ A) → Derivation (Γ ⊢ a' ≅ a'' ⋮ A) → Derivation (Γ ⊢ a ≅ a'' ⋮ A)
+| substCongrType : Derivation (Γ₂ ⊢ γ ≅ γ' ∷ Γ₁) → Derivation (Γ₁ ⊢ A type) →
+  Derivation (Γ₂ ⊢ (A ⟦γ⟧) ≅ (A ⟦γ'⟧) type)
+| substCongrTerm : Derivation (Γ₂ ⊢ γ ≅ γ' ∷ Γ₁) → Derivation (Γ₁ ⊢ a ⋮ A) →
+  Derivation (Γ₂ ⊢ (a ⟦γ⟧) ≅ (a ⟦γ'⟧) ⋮ (A ⟦γ⟧))
+| compSubstCongr : Derivation (Γ₃ ⊢ γ₂ ≅ γ₂' ∷ Γ₂) → Derivation (Γ₂ ⊢ γ₁ ≅ γ₁' ∷ Γ₁) →
+  Derivation (Γ₃ ⊢ (γ₁ ∘ γ₂) ≅ (γ₁' ∘ γ₂') ∷ Γ₁)
+| consSubstCongr : Derivation (Γ₂ ⊢ γ ≅ γ' ∷ Γ₁) → Derivation (Γ₁ ⊢ A type) → Derivation (Γ₂ ⊢ a ≅ a' ⋮ (A ⟦γ⟧)) →
+  Derivation (Γ₂ ⊢ (γ ● a) ≅ (γ' ● a') ∷ (Γ₁ ⋆ A))
 
 #check Derivation.substTy
