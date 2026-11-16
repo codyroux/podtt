@@ -1,0 +1,10 @@
+name = "podtt"
+version = "0.1.0"
+defaultTargets = ["podtt"]
+
+[[lean_lib]]
+name = "Podtt"
+
+[[lean_exe]]
+name = "podtt"
+root = "Main"
