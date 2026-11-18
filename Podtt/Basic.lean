@@ -129,18 +129,43 @@ inductive Derivation : Judgment → Prop where
 
 #check Sigma
 
-def lemma_2_3_4_right (dA : Derivation <| Γ ⊢ A type) (d : Derivation <| Γ ⊢ γ ∷ Γ⋆A)
+def termOfSubst (dA : Derivation <| Γ ⊢ A type) (d : Derivation <| Γ ⊢ γ ∷ Γ⋆A)
     (d' : Derivation <| Γ ⊢ p ∘ γ ≅ 𝕚 ∷ Γ) : Σ' a, Derivation (Γ ⊢ a ⋮ A) :=
   -- a := q⟦γ⟧ : A⟦p⟧⟦γ⟧ ≅ A⟦p ∘ γ⟧ ≅ A⟦𝕚⟧ ≅ A
   ⟨q⟦γ⟧, Derivation.convTerm (Derivation.substTerm (Derivation.var dA) d)
     (Derivation.transType (Derivation.symmType (Derivation.eqConcatType d (Derivation.weak dA) dA))
       (Derivation.transType (Derivation.substCongrType d' dA) (Derivation.idType dA)))⟩
 
-def lemma_2_3_4_left (dΓ : Derivation (Γ ⊢)) (dA : Derivation <| Γ ⊢ A type) (d : Derivation (Γ ⊢ a ⋮ A)) :
+def substOfTerm (dΓ : Derivation (Γ ⊢)) (dA : Derivation <| Γ ⊢ A type) (d : Derivation (Γ ⊢ a ⋮ A)) :
     Σ' γ, Derivation (Γ ⊢ γ ∷ Γ⋆A) ∧ Derivation (Γ ⊢ p ∘ γ ≅ 𝕚 ∷ Γ) :=
   -- γ := 𝕚 ● a, using a : A ≅ A⟦𝕚⟧
   have da : Derivation (Γ ⊢ a ⋮ A⟦𝕚⟧) := Derivation.convTerm d (Derivation.symmType (Derivation.idType dA))
   ⟨𝕚 ● a, Derivation.extend (Derivation.id dΓ) dA da, Derivation.eqPCons (Derivation.id dΓ) dA da⟩
+
+/-- `termOfSubst` and `substOfTerm` are mutually inverse, up to judgmental equality. -/
+theorem lemma_2_3_4 (dΓ : Derivation (Γ ⊢)) (dA : Derivation <| Γ ⊢ A type) :
+    (∀ a (d : Derivation (Γ ⊢ a ⋮ A)),
+      let γ := substOfTerm dΓ dA d
+      Derivation (Γ ⊢ (termOfSubst dA γ.2.1 γ.2.2).1 ≅ a ⋮ A)) ∧
+    (∀ γ (d : Derivation (Γ ⊢ γ ∷ Γ ⋆ A)) (d' : Derivation (Γ ⊢ p ∘ γ ≅ 𝕚 ∷ Γ)),
+      Derivation (Γ ⊢ (substOfTerm dΓ dA (termOfSubst dA d d').2).1 ≅ γ ∷ Γ ⋆ A)) := by
+  constructor
+  · -- q⟦𝕚 ● a⟧ ≅ a ⋮ A⟦𝕚⟧, then convert A⟦𝕚⟧ ≅ A
+    intro a d
+    have da : Derivation (Γ ⊢ a ⋮ A⟦𝕚⟧) :=
+      Derivation.convTerm d (Derivation.symmType (Derivation.idType dA))
+    exact Derivation.convEqTerm (Derivation.eqQVar (Derivation.id dΓ) dA da) (Derivation.idType dA)
+  · -- 𝕚 ● q⟦γ⟧ ≅ (p ∘ γ) ● q⟦γ⟧ ≅ γ
+    intro γ d d'
+    have dq : Derivation (Γ ⊢ q⟦γ⟧ ⋮ A⟦p ∘ γ⟧) :=
+      Derivation.convTerm (Derivation.substTerm (Derivation.var dA) d)
+        (Derivation.symmType (Derivation.eqConcatType d (Derivation.weak dA) dA))
+    exact Derivation.symmSubst <| Derivation.transSubst (Derivation.eqPEta dA d)
+      (Derivation.consSubstCongr d' dA (Derivation.reflTerm dq))
+
+#check PSigma.snd
+#print And
+
 
 theorem lemma_2_3_5 (d₁ : Derivation <| Δ ⊢ γ ∷ Γ) (dA : Derivation <| Γ ⊢ A type)
     (d₂ : Derivation <| Δ ⊢ a ⋮ A⟦γ⟧) (d₃ : Derivation <| Ξ ⊢ δ ∷ Δ) :
